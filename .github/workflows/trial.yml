@@ -20,13 +20,13 @@ jobs:
 
       - name: Convert PPTX to PDF
         run: |
-          libreoffice --headless --convert-to pdf pinecone.pptx
+          libreoffice --headless --convert-to pdf input/content/Portfolio.pptx
 
       - name: Create Artifacts Directory
         run: mkdir artifacts
 
       - name: Move PDF to Artifacts Directory
-        run: mv pinecone.pdf artifacts/
+        run: mv Portfolio.pdf artifacts/
 
       - name: Upload Artifact
         uses: actions/upload-artifact@v2
