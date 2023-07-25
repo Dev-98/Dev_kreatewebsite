@@ -8,10 +8,35 @@ on:
   workflow_dispatch:
 
 jobs:
-  convert:
+
+  convert_to_pdf:
     runs-on: ubuntu-latest
 
     steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+
+      - name: Install LibreOffice
+        run: |
+          sudo apt update 
+          sudo apt install libreoffice
+
+      - name: Convert PPTX to PDF
+        run: |
+        
+          libreoffice --headless --convert-to pdf pinecone.pptx
+
+      - name: Create Artifacts Directory
+        run: mkdir artifacts
+
+      - name: Move PDF to Artifacts Directory
+        run: mv pinecone.pdf artifacts/
+
+      - name: Upload Artifact - PDF
+        uses: actions/upload-artifact@v2
+        with:
+          name: converted-pdfs
+          path: artifacts/
 
       - name: Checkout Output Repository
         uses: actions/checkout@v2
@@ -22,5 +47,14 @@ jobs:
 
       - name: Move PDF to Output Repository
         run: |
-          cp input/* ./kreate_output/
+          cp artifacts/* ./kreate_output/
         working-directory: ./
+
+      - name: Commit and Push PDF to Output Repository
+        run: |
+          cd kreate_output
+          git config --global user.name "Dev-98"
+          git config --global user.email "devparker48@gmail.com"
+          git add .
+          git commit -m "Add PDF output"
+          git push origin main
