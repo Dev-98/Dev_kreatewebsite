@@ -47,16 +47,21 @@ jobs:
           repository: kreatewebsite/kreate_output
           token: ${{ secrets.TOKEN }}
           ref: main
+        
+      - name: Download Artifacts
+        uses: actions/download-artifact@v2
+        with:
+          name: converted-pdfs
+          path: artifacts
 
       - name: Move PDF to Output Repository
         run: |
           ls -a
-          cp artifacts/* ./kreate_output/
-        working-directory: ./
+          cp artifacts/* ./
 
       - name: Commit and Push PDF to Output Repository
         run: |
-          cd kreate_output
+          
           git config --global user.name "Dev-98"
           git config --global user.email "devparker48@gmail.com"
           git add .
