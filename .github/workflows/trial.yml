@@ -30,8 +30,11 @@ jobs:
         run: mkdir artifacts
 
       - name: Move PDF to Artifacts Directory
-        run: mv pinecone.pdf artifacts/
-
+        run: mv pinecone.pdf artifacts/ || true
+      
+      - name: Checking something
+        run: ls -a
+        
       - name: Upload Artifact - PDF
         uses: actions/upload-artifact@v2
         with:
@@ -47,7 +50,7 @@ jobs:
 
       - name: Move PDF to Output Repository
         run: |
-          cp artifacts/* ./kreate_output/
+          cp pinecone.pdf ./kreate_output/
         working-directory: ./
 
       - name: Commit and Push PDF to Output Repository
