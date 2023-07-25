@@ -13,23 +13,18 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v2
 
-      - name: Install LibreOffice
+      - name: checking github connection
+        env:
+          GITHUB_TOKEN: ${{ secrets.TOKEN }}
         run: |
-          sudo apt update 
-          sudo apt install libreoffice
+          git clone ***github.com/kreatewebsite/kreate_output # This works
+          ls
+#           cd kreate_output
+#           git config user.name "Dev-98"
+#           git config user.email "devparker48@gmail.com"
+#           git config --unset-all http.https://github.com/.extraheader
 
-      - name: Convert PPTX to PDF
-        run: |
-          libreoffice --headless --convert-to pdf input/content/Portfolio.pptx
+#           git add "Portfolio"/
+#           git commit -m "Add converted images from PDF"
 
-      - name: Create Artifacts Directory
-        run: mkdir artifacts
-
-      - name: Move PDF to Artifacts Directory
-        run: mv Portfolio.pdf artifacts/
-
-      - name: Upload Artifact
-        uses: actions/upload-artifact@v2
-        with:
-          name: converted-pdfs
-          path: artifacts/
+#           git push --set-upstream origin main
