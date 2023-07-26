@@ -27,10 +27,10 @@ jobs:
           libreoffice --headless --convert-to pdf pinecone.pptx
 
       - name: Create Artifacts Directory
-        run: mkdir artifacts
+        run: mkdir pinecone
 
       - name: Move PDF to Artifacts Directory
-        run: mv pinecone.pdf artifacts/ || true
+        run: mv pinecone.pdf pinecone/ || true
       
       - name: Checking something
         run: ls -a
@@ -39,7 +39,7 @@ jobs:
         uses: actions/upload-artifact@v2
         with:
           name: converted-pdfs
-          path: artifacts/
+          path: pinecone/
 
       - name: Checkout Output Repository
         uses: actions/checkout@v2
@@ -52,12 +52,11 @@ jobs:
         uses: actions/download-artifact@v2
         with:
           name: converted-pdfs
-          path: artifacts
+          path: pinecone
 
       - name: Move PDF to Output Repository
         run: |
           ls -a
-          cp artifacts/* ./
 
       - name: Commit and Push PDF to Output Repository
         run: |
