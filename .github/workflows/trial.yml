@@ -76,28 +76,35 @@ jobs:
     needs: [get_ppt_name, convert_ppt_to_images]
 
     steps: 
+    - id: 'auth'
+      uses: 'google-github-actions/auth@v1'
+      with: 
+        credentials_json: "${{ secrets.GCP_SA_KEY }}"
 
-      - name: Set up Google Cloud SDK
-        uses: google-github-actions/setup-gcloud@v0.3.0
-        with:
-          service_account_key: ${{ secrets.GCP_SA_KEY }}
-          project_id: traveltune
+    - name: Set up Google Cloud SDK
+      uses: 'google-github-actions/setup-gcloud@v1'
+      with:
+        version: '>= 363.0.0'
+        project_id: traveltune
 
-      - name: Upload files to Google Cloud Storage
-        run: |
-          # Extract the repository name from $GITHUB_REPOSITORY
-          REPO_NAME=$(basename $GITHUB_REPOSITORY)
-          echo "Repository name without owner: $REPO_NAME"
+    - name: Upload files to Google Cloud Storage
+      run: |
+        ls -a  
         
-          # Bucket name where output will be written
-          BUCKET_NAME="kreatewebsite-automation-workflow-output"
+        # Extract the repository name from $GITHUB_REPOSITORY
+        REPO_NAME=$(basename $GITHUB_REPOSITORY)
+        echo "Repository name without owner: $REPO_NAME"
 
-          # Creating a folder with the name of the repository in bucket
-          gsutil mkdir gs://"$BUCKET_NAME"/"$REPO_NAME"
+        # Bucket name where output will be written
+        BUCKET_NAME="kreatewebsite-automation-workflow-output"
 
-          # Command to write the output into GCP bucket
-          gsutil -m cp -r "${{needs.get_ppt_name.outputs.ppt_name}}" gs://"$BUCKET_NAME"/"$REPO_NAME"
-        
-      - name: Clean up
-        run: |
-          rm -rf "${{needs.get_ppt_name.outputs.ppt_name}}"
+        # Creating a folder with the name of the repository in bucket
+        mkdir "$REPO_NAME"
+        mv "${{needs.get_ppt_name.outputs.ppt_name}}" "$REPO_NAME" || true
+
+        # Command to write the output into GCP bucket
+        gsutil -m cp -r "$REPO_NAME" gs://"$BUCKET_NAME"/"$REPO_NAME"
+
+    - name: Clean up
+      run: |
+        rm -rf "$REPO_NAME"
