@@ -90,7 +90,7 @@ jobs:
           echo "Repository name without owner: $REPO_NAME"
         
           # Bucket name where output will be written
-          BUCKET_NAME=your-gcs-bucket-name
+          BUCKET_NAME="kreatewebsite-automation-workflow-output"
 
           # Creating a folder with the name of the repository in bucket
           gsutil mkdir gs://"$BUCKET_NAME"/"$REPO_NAME"
