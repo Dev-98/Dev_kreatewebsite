@@ -1,68 +1,103 @@
-name: PPTX to PDF Conversion
+name: PPTX to Images for GCP Bucket
 
 on:
   push:
     branches:
       - main
-      
-  workflow_dispatch:
-
+   
 jobs:
-
-  convert_to_pdf:
+  get_ppt_name:
     runs-on: ubuntu-latest
 
+    outputs:
+      ppt_name: ${{ steps.get_ppt_name.outputs.ppt_names }}
+
     steps:
-      - name: Checkout code
+      - name: Checkout Repository
         uses: actions/checkout@v2
 
-      - name: Install LibreOffice
+      - name: Get PPT File Name
+        id: get_ppt_name
+        run: |
+          ppt_file=$(find . -name "*.pptx")
+          ppt_name=$(basename "$ppt_file" .pptx)
+          echo "Output of this $ppt_name"
+
+          # Export the variable so that it can be used in subsequent steps and jobs
+          echo "ppt_names=$ppt_name" >> $GITHUB_OUTPUT
+          
+            
+  convert_ppt_to_images:
+    runs-on: ubuntu-latest
+    needs: get_ppt_name
+    
+    
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v2          
+
+      - name: Install Poppler and Libreoffice
         run: |
           sudo apt-get update 
-          sudo apt-get install -y libreoffice
+          sudo apt-get install -y poppler-utils
+          sudo apt update 
+          sudo apt install libreoffice
 
-      - name: Convert PPTX to PDF
-        run: |
-        
-          libreoffice --headless --convert-to pdf pinecone.pptx
-
-      - name: Create Artifacts Directory
-        run: mkdir pinecone
-
-      - name: Move PDF to Artifacts Directory
-        run: mv pinecone.pdf pinecone/ || true
-      
-      - name: Checking something
-        run: ls -a
-        
-      - name: Upload Artifact - PDF
-        uses: actions/upload-artifact@v2
-        with:
-          name: converted-pdfs
-          path: pinecone/
-
-      - name: Checkout Output Repository
-        uses: actions/checkout@v2
-        with:
-          repository: kreatewebsite/kreate_output
-          token: ${{ secrets.TOKEN }}
-          ref: main
-        
-      - name: Download Artifacts
-        uses: actions/download-artifact@v2
-        with:
-          name: converted-pdfs
-          path: pinecone
-
-      - name: Move PDF to Output Repository
-        run: |
-          ls -a
-
-      - name: Commit and Push PDF to Output Repository
+      - name: Convert PPT to PDF and Create Artifact
         run: |
           
-          git config --global user.name "Dev-98"
-          git config --global user.email "devparker48@gmail.com"
-          git add .
-          git commit -m "Add PDF output"
-          git push origin main
+          libreoffice --headless --convert-to pdf input/content/"${{needs.get_ppt_name.outputs.ppt_name}}".pptx
+
+          # Your commands to convert PPT to PDF using an appropriate tool (e.g., LibreOffice)
+                        
+      - name: Convert PDF to Images
+        run: |
+          
+          # Create a directory to store the images
+          mkdir "${{needs.get_ppt_name.outputs.ppt_name}}"
+
+          # Convert PDF to images using pdftoppm
+          pdftoppm -png "${{needs.get_ppt_name.outputs.ppt_name}}".pdf "${{needs.get_ppt_name.outputs.ppt_name}}"/slide 
+
+      - name: Convert PDF to Text
+        run: pdftotext "${{needs.get_ppt_name.outputs.ppt_name}}".pdf "${{needs.get_ppt_name.outputs.ppt_name}}"/"${{needs.get_ppt_name.outputs.ppt_name}}".txt
+          
+      - name: Move PDF file into dir
+        run: |
+          mv "${{needs.get_ppt_name.outputs.ppt_name}}".pdf "${{needs.get_ppt_name.outputs.ppt_name}}" || true
+          
+      - name: Verify PDF Output
+        run: |
+          # List files in the current directory to check if the PDF was generated
+          ls -a    
+
+  gcp_setup: 
+    runs-on: ubuntu-latest
+    needs: [get_ppt_name, convert_ppt_to_images]
+
+    steps: 
+
+      - name: Set up Google Cloud SDK
+        uses: google-github-actions/setup-gcloud@v0.3.0
+        with:
+          service_account_key: ${{ secrets.GCP_SA_KEY }}
+          project_id: traveltune
+
+      - name: Upload files to Google Cloud Storage
+        run: |
+          # Extract the repository name from $GITHUB_REPOSITORY
+          REPO_NAME=$(basename $GITHUB_REPOSITORY)
+          echo "Repository name without owner: $REPO_NAME"
+        
+          # Bucket name where output will be written
+          BUCKET_NAME=your-gcs-bucket-name
+
+          # Creating a folder with the name of the repository in bucket
+          gsutil mkdir gs://"$BUCKET_NAME"/"$REPO_NAME"
+
+          # Command to write the output into GCP bucket
+          gsutil -m cp -r "${{needs.get_ppt_name.outputs.ppt_name}}" gs://"$BUCKET_NAME"/"$REPO_NAME"
+        
+      - name: Clean up
+        run: |
+          rm -rf "${{needs.get_ppt_name.outputs.ppt_name}}"
