@@ -13,24 +13,52 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v2
 
-#       - name: Install Dependencies
-#         run: |
-#           sudo apt-get update
-#           sudo apt-get install -y libreoffice poppler-utils
+      - name: Install Dependencies
+        run: |
+          sudo apt-get update 
+          sudo apt-get install -y poppler-utils libreoffice
 
       - name: Find PPTX Files
         id: find_pptx_files
         run: |
           find input/content -name "*.pptx" -type f > pptx_files.txt
           cat pptx_files.txt
+          
+      - name: Get Repository Name
+        id: get_repo_name
+        run: |
+          # Extract the repository name from $GITHUB_REPOSITORY
+          REPO_NAME=$(basename $GITHUB_REPOSITORY)
+          echo "Repository name without owner: $REPO_NAME"
+          echo "REPO_NAME=$REPO_NAME" >> $GITHUB_OUTPUT
            
       - name: Convert PPTX to PDF and Images
         run: |
-          mkdir -p artifacts/images
 
+          mkdir "${{steps.get_repo_name.outputs.REPO_NAME}}"
+          
           while IFS= read -r ppt_file; do
             ppt_name=$(basename "$ppt_file" .pptx)
             cat "$ppt_name"
-            cat "$ppt_file"
-          done < pptx_files.txt
+            
+            mkdir -p "$ppt_name"/images
+            
+            libreoffice --headless --convert-to pdf "$ppt_name".pptx
 
+            pdf_file="$ppt_name.pdf"
+            pdftoppm -png "$pdf_file" "$ppt_name"/images/slide  # Convert PDF to PNG images, you can use -jpeg for JPEG images
+            
+            pdftotext "$pdf_file" "$ppt_name"/"$ppt_name".txt  # Convert PDF to text file
+            
+            rm "$pdf_file"
+            mv "$ppt_name" "${{steps.get_repo_name.outputs.REPO_NAME}}"
+            
+          done < pptx_files.txt
+          
+          ls -a # list the files and folder that were created
+
+      - name: Upload Artifacts
+        uses: actions/upload-artifact@v2
+        with:
+          name: converted-images-text
+          path: "${{steps.get_repo_name.outputs.REPO_NAME}}"
