@@ -43,7 +43,7 @@ jobs:
             
             mkdir -p "$ppt_name"/images
             
-            libreoffice --headless --convert-to pdf "$ppt_name".pptx
+            libreoffice --headless --convert-to pdf "$ppt_file"
 
             pdf_file="$ppt_name.pdf"
             pdftoppm -png "$pdf_file" "$ppt_name"/images/slide  # Convert PDF to PNG images, you can use -jpeg for JPEG images
