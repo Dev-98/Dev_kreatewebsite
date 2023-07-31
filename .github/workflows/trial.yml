@@ -22,30 +22,15 @@ jobs:
         id: find_pptx_files
         run: |
           find input/content -name "*.pptx" -type f > pptx_files.txt
-          sed -i 's/^.//g' pptx_files.txt
           cat pptx_files.txt
+           
       - name: Convert PPTX to PDF and Images
         run: |
           mkdir -p artifacts/images
 
           while IFS= read -r ppt_file; do
             ppt_name=$(basename "$ppt_file" .pptx)
-            libreoffice --headless --convert-to pdf "$ppt_file"
-
-            pdf_file="${ppt_name}.pdf"
-            pdftoppm "$pdf_file" artifacts/images/output -png  # Convert PDF to PNG images, you can use -jpeg for JPEG images
-
-            rm "$pdf_file"
+            cat "$ppt_name"
+            cat "$ppt_file"
           done < pptx_files.txt
 
-      - name: Create Artifacts Directory
-        run: mkdir artifacts
-
-      - name: Move Images to Artifacts Directory
-        run: mv artifacts/images artifacts/
-
-      - name: Upload Artifacts
-        uses: actions/upload-artifact@v2
-        with:
-          name: converted-images
-          path: artifacts
