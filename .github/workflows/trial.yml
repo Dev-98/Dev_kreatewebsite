@@ -21,9 +21,9 @@ jobs:
       - name: Find PPTX Files
         id: find_pptx_files
         run: |
-          find content -name "*.pptx" -type f > pptx_files.txt
+          find input/content -name "*.pptx" -type f > pptx_files.txt
           sed -i 's/^.//g' pptx_files.txt
-
+          cat pptx_files.txt
       - name: Convert PPTX to PDF and Images
         run: |
           mkdir -p artifacts/images
