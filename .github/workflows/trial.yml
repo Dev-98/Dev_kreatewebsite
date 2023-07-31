@@ -40,9 +40,9 @@ jobs:
           
           for ppt_file in $(cat pptx_files.txt); do
             ppt_name=$(basename "$ppt_file" .pptx)
-            cat "$ppt_name"
+            echo "This the ppt file naem = $ppt_name, and path is this = $ppt_file"
             
-            mkdir -p "$ppt_name"/images
+            mkdir "$ppt_name"/images
             
             libreoffice --headless --convert-to pdf "$ppt_file"
 
