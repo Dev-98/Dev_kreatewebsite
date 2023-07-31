@@ -40,17 +40,17 @@ jobs:
           
           for ppt_file in $(cat pptx_files.txt); do
             ppt_name=$(basename "$ppt_file" .pptx)
-            echo "This the ppt file naem = $ppt_name, and path is this = $ppt_file"
+            echo "This the ppt file name = $ppt_name, and path is this = $ppt_file"
             
-            mkdir "$ppt_name"/images
+            mkdir -p "$ppt_name/images"
             
             libreoffice --headless --convert-to pdf "$ppt_file"
 
             pdf_file="$ppt_name.pdf"
             
-            pdftoppm -png "$pdf_file" "$ppt_name"/images/slide  # Convert PDF to PNG images, you can use -jpeg for JPEG images
+            pdftoppm -png "$pdf_file" "$ppt_name/images/slide"  # Convert PDF to PNG images, you can use -jpeg for JPEG images
             
-            pdftotext "$pdf_file" "$ppt_name"/"$ppt_name".txt  # Convert PDF to text file
+            pdftotext "$pdf_file" "$ppt_name/$ppt_name.txt"  # Convert PDF to text file
             
             rm "$pdf_file"
             mv "$ppt_name" "${{steps.get_repo_name.outputs.REPO_NAME}}"
