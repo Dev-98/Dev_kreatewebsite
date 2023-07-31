@@ -23,6 +23,7 @@ jobs:
         run: |
           find input/content -name "*.pptx" -type f > pptx_files.txt
           cat pptx_files.txt
+          ls -a
           
       - name: Get Repository Name
         id: get_repo_name
@@ -37,13 +38,13 @@ jobs:
 
           mkdir "${{steps.get_repo_name.outputs.REPO_NAME}}"
           
-          while IFS= read -r ppt_file; do
-            ppt_name=$(basename "$ppt_file" .pptx)
+          while IFS= read -r pptx_files; do
+            ppt_name=$(basename "$pptx_files" .pptx)
             cat "$ppt_name"
             
             mkdir -p "$ppt_name"/images
             
-            libreoffice --headless --convert-to pdf "$ppt_file"
+            libreoffice --headless --convert-to pdf "$pptx_files"
 
             pdf_file="$ppt_name.pdf"
             pdftoppm -png "$pdf_file" "$ppt_name"/images/slide  # Convert PDF to PNG images, you can use -jpeg for JPEG images
