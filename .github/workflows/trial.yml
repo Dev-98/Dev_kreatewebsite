@@ -2,8 +2,8 @@ name: PPTX to Images for GCP Bucket
 
 on:
   push:
-    paths:
-      - 'input/content/**'
+    branches:
+      - main
 
 
 jobs:
@@ -42,6 +42,7 @@ jobs:
           
           for ppt_file in $(cat pptx_files.txt); do
             base_name=$(basename "$ppt_file")
+            echo "base name $base_name"
             ppt_name=$(echo "$base_name" | sed 's/\.pptx$//')
             echo "This the ppt file name = $ppt_name, and path is this = $ppt_file"
             
