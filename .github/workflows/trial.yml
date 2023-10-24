@@ -39,7 +39,7 @@ jobs:
           mkdir "${{steps.get_repo_name.outputs.REPO_NAME}}"
           
           for ppt_file in $(cat pptx_files.txt); do
-            ppt_name=$(basename "$ppt_file" .pptx)
+            ppt_name=$(echo "$ppt_file" | sed 's/\.pptx$//')
             echo "This the ppt file name = $ppt_name, and path is this = $ppt_file"
             
             mkdir -p "$ppt_name/images"
