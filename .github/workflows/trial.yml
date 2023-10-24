@@ -41,9 +41,8 @@ jobs:
           
           
           for ppt_file in $(cat pptx_files.txt); do
-            base_name=$(basename "$ppt_file")
-            echo "base name $base_name"
-            ppt_name=$(echo "$base_name" | sed 's/\.pptx$//')
+
+            ppt_name=$(echo "$ppt_file" | sed 's/.*\\//; s/\.pptx$//')
             echo "This the ppt file name = $ppt_name, and path is this = $ppt_file"
             
             mkdir -p "$ppt_name/images"
