@@ -42,7 +42,7 @@ jobs:
           
           for ppt_file in $(cat pptx_files.txt); do
 
-            ppt_name=$(echo "$ppt_file" | sed 's/.*\\//; s/\.pptx$//')
+            ppt_name=$(echo "$ppt_file" | awk -F'\\' '{print $NF}' | sed 's/\.pptx$//')
             echo "This the ppt file name = $ppt_name, and path is this = $ppt_file"
             
             mkdir -p "$ppt_name/images"
